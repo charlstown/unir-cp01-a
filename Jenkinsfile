@@ -16,10 +16,12 @@ pipeline {
             }
         }
         stage('Unit') {
+            environment {
+                PYTHONPATH="."
+            }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
                     // Run Pytest unit tests
-                    sh 'export PYTHONPATH="."'
                     sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
                 }
                 
