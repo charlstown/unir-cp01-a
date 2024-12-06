@@ -28,11 +28,13 @@ pipeline {
         stage('Rest') {
             steps {
                 // Run flask app
-                sh'''
-                sh 'export FLASK_APP=app/api.py'
-                flask run &
-                sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
-                '''
+                catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
+                    sh'''
+                    sh 'export FLASK_APP=app/api.py'
+                    flask run &
+                    sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
+                    '''
+                }
             }
         }
         stage('Results') {
