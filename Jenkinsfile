@@ -17,7 +17,7 @@ pipeline {
         }
         stage('Unit') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/O24/test-1"
+                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
@@ -29,7 +29,7 @@ pipeline {
         }
         stage('Rest') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/O24/test-1"
+                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
             }
             steps {
                 // Run flask app
