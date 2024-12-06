@@ -3,29 +3,34 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                script {
-                    // Add the safe.directory command
-                    sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
-                }
+                // Add the safe.directory and clone the repository
+                sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
+                git 'https://github.com/charlstown/unir-cp01A.git'
             }
         }
         stage('Build') {
             steps {
-                // Your build steps go here
-                git 'https://github.com/charlstown/unir-cp01A.git'
+                // No build needed
+                echo 'No build needed'
+                sh 'dir'
             }
         }
         stage('Unit') {
             steps {
+                // Run Pytest unit tests
+                sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+            }
+        }
+        stage('Results') {
+            steps {
                 // Your Unit steps go here
-                sh 'python3 -m pytest test/unit/calc_test.py'
-                sh 'python3 -m pytest test/unit/util_test.py'
+                junit 'result*.xml'
             }
         }
         stage('Rest') {
             steps {
                 // Your Unit steps go here
-                sh 'python3 -m pytest test/rest/api_test.py'
+                sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
             }
         }
     }
