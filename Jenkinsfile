@@ -17,7 +17,7 @@ pipeline {
         }
         stage('Unit') {
             environment {
-                PYTHONPATH="."
+                PYTHONPATH="/var/jenkins_home/workspace/O24/test-1"
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
@@ -28,11 +28,14 @@ pipeline {
             }
         }
         stage('Rest') {
+            environment {
+                PYTHONPATH="/var/jenkins_home/workspace/O24/test-1"
+            }
             steps {
                 // Run flask app
                 catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
                     sh'''
-                    sh 'export FLASK_APP=app/api.py'
+                    export FLASK_APP=app/api.py
                     flask run &
                     sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
                     '''
