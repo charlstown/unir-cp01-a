@@ -17,20 +17,28 @@ pipeline {
         }
         stage('Unit') {
             steps {
-                // Run Pytest unit tests
-                sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
-            }
-        }
-        stage('Results') {
-            steps {
-                // Your Unit steps go here
-                junit 'result*.xml'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
+                    // Run Pytest unit tests
+                    sh 'export PYTHONPATH="."'
+                    sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+                }
+                
             }
         }
         stage('Rest') {
             steps {
-                // Your Unit steps go here
+                // Run flask app
+                sh'''
+                sh 'export FLASK_APP=app/api.py'
+                flask run &
                 sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
+                '''
+            }
+        }
+        stage('Results') {
+            steps {
+                // Get results
+                junit 'result*.xml'
             }
         }
     }
