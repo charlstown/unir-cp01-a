@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 // No build needed
-                echo 'No build needed'
+                echo '[Build] No build needed'
                 sh 'dir'
             }
         }
