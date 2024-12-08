@@ -37,7 +37,7 @@ pipeline {
                     sh'''
                     export FLASK_APP=app/api.py
                     flask run &
-                    sh 'python3 -m pytest --junitxml=result-rest.xml test/rest'
+                    python3 -m pytest --junitxml=result-rest.xml test/rest
                     '''
                 }
             }
