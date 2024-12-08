@@ -12,8 +12,10 @@ pipeline {
             steps {
                 // No build needed
                 echo '[Build] No build needed'
-                sh 'ls -la'
-                sh 'echo $WORKSPACE'
+                sh '''
+                ls -la
+                echo $WORKSPACE
+                '''
             }
         }
         stage('Tests') {
