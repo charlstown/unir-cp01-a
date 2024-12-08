@@ -15,30 +15,34 @@ pipeline {
                 sh 'dir'
             }
         }
-        stage('Unit') {
-            environment {
-                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
-            }
-            steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
-                    // Run Pytest unit tests
-                    sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+        stage('Tests') {
+            parallel {
+                stage('Unit') {
+                    environment {
+                        PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
+                    }
+                    steps {
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
+                            // Run Pytest unit tests
+                            sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+                        }
+                        
+                    }
                 }
-                
-            }
-        }
-        stage('Rest') {
-            environment {
-                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
-            }
-            steps {
-                // Run flask app
-                catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
-                    sh'''
-                    export FLASK_APP=app/api.py
-                    flask run &
-                    python3 -m pytest --junitxml=result-rest.xml test/rest
-                    '''
+                stage('Rest') {
+                    environment {
+                        PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
+                    }
+                    steps {
+                        // Run flask app
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
+                            sh'''
+                            export FLASK_APP=app/api.py
+                            flask run &
+                            python3 -m pytest --junitxml=result-rest.xml test/rest
+                            '''
+                        }
+                    }
                 }
             }
         }
