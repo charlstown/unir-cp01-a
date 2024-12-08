@@ -13,7 +13,7 @@ pipeline {
                 // No build needed
                 echo '[Build] No build needed'
                 sh 'ls -la'
-                echo $WORKSPACE
+                sh 'echo $WORKSPACE'
             }
         }
         stage('Tests') {
