@@ -5,7 +5,7 @@ pipeline {
             steps {
                 // Add the safe.directory and clone the repository
                 sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
-                git 'https://github.com/charlstown/unir-cp01A.git'
+                git 'https://github.com/charlstown/unir-cp01-a.git'
             }
         }
         stage('Build') {
@@ -37,7 +37,7 @@ pipeline {
                     sh'''
                     export FLASK_APP=app/api.py
                     flask run &
-                    sh 'python3 -m pytest --junitxml=result-rest.xml test/rest/api_test.py'
+                    sh 'python3 -m pytest --junitxml=result-rest.xml test/rest'
                     '''
                 }
             }
