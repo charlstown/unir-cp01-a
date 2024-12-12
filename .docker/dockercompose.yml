@@ -1,12 +1,29 @@
-version: "3.8"
+networks:
+  shared_network:
+    driver: bridge
 
 services:
+  jenkins:
+    image: jenkins-python:latest
+    container_name: jenkins
+    user: root
+    volumes:
+      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/jenkins_vol:/var/jenkins_home
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    networks:
+      - shared_network
+    restart: on-failure
+    
   wiremock:
     image: wiremock/wiremock:latest
-    container_name: wiremock-local
+    container_name: wiremock
     ports:
       - "9090:9090"  # Map your desired port
     command: --port=9090  # Specify the new internal port for WireMock
+    networks:
+      - shared_network
     volumes:
       - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/extensions:/var/wiremock/extensions
       - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/__files:/home/wiremock/__files
