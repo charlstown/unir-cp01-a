@@ -12,12 +12,17 @@ pipeline {
                 git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1
                 '''
                 git 'https://github.com/charlstown/unir-cp01-a.git'
+
+                // Stash files after cloning
+                stash includes: '**', name: 'project-files'
             }
         }
 
         stage('Build') {
             agent { label 'agent-any' }
             steps {
+                // Unstash project files
+                unstash 'project-files'
                 sh '''
                 echo "[AGENT]"
                 whoami
@@ -37,6 +42,8 @@ pipeline {
                         PYTHONPATH = "/var/jenkins_home/workspace/O24/cp1-1-dev"
                     }
                     steps {
+                        // Unstash project files
+                        unstash 'project-files'
                         sh '''
                         echo "[AGENT]"
                         whoami
@@ -47,13 +54,15 @@ pipeline {
                         }
                     }
                 }
-                
+
                 stage('Rest') {
                     agent { label 'agent-jinx' }
                     environment {
                         PYTHONPATH = "/var/jenkins_home/workspace/O24/cp1-1-dev"
                     }
                     steps {
+                        // Unstash project files
+                        unstash 'project-files'
                         sh '''
                         echo "[AGENT]"
                         whoami
