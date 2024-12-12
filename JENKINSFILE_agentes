@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         stage('Setup') {
-            agent { label 'agent-any' }
+            agent any
             steps {
                 sh '''
                 echo "[AGENT]"
@@ -19,7 +19,7 @@ pipeline {
         }
 
         stage('Build') {
-            agent { label 'agent-any' }
+            agent any
             steps {
                 // Unstash project files
                 unstash 'project-files'
@@ -81,7 +81,7 @@ pipeline {
         }
 
         stage('Results') {
-            agent { label 'agent-any' }
+            agent any
             steps {
                 sh '''
                 echo "[AGENT]"
