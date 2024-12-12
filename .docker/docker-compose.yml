@@ -1,5 +1,5 @@
 networks:
-  shared_network:
+  jenkins_network:
     driver: bridge
 
 services:
@@ -13,7 +13,7 @@ services:
       - "8080:8080"
       - "50000:50000"
     networks:
-      - shared_network
+      - jenkins_network
     restart: on-failure
     
   wiremock:
@@ -23,8 +23,36 @@ services:
       - "9090:9090"  # Map your desired port
     command: --port=9090  # Specify the new internal port for WireMock
     networks:
-      - shared_network
+      - jenkins_network
     volumes:
       - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/extensions:/var/wiremock/extensions
       - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/__files:/home/wiremock/__files
       - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/mappings:/home/wiremock/mappings
+
+  agent-jinx:
+    image: jenkins-agent-jinx:latest
+    container_name: agent-jinx
+    restart: always
+    user: root
+    hostname: agent-jinx
+
+    networks:
+      - jenkins_network
+
+    volumes:
+      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/jinx-ssh/.ssh:/home/jinx/.ssh
+      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/jinx_vol:/home/jinx/jenkins
+
+  agent-vi:
+    image: jenkins-agent-vi:latest
+    container_name: agent-vi
+    restart: always
+    user: root
+    hostname: agent-vi
+    networks:
+      - jenkins_network
+
+    volumes:
+      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/vi-ssh/.ssh:/home/vi/.ssh
+      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/vi_vol:/home/vi/jenkins
+

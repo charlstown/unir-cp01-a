@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+
+# Use root user
+USER root
+
+# ENV variables
+ARG USERNAME=default_user
+ARG PASSWORD=default_password
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y openssh-server sudo
+
+# Create the user, set the password, and add to sudo group
+RUN useradd -ms /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && echo "${USERNAME}:${PASSWORD}" | sudo chpasswd

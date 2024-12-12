@@ -1,0 +1,34 @@
+FROM ubuntu:latest
+
+# Use root user
+USER root
+
+# ENV variables
+ARG USERNAME=default_user
+ARG PASSWORD=default_password
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y openssh-server sudo
+
+# Install JAVA
+RUN apt install -y openjdk-17-jdk openjdk-17-jre
+
+# Create the user, set the password, and add to sudo group
+RUN useradd -ms /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && echo "${USERNAME}:${PASSWORD}" | sudo chpasswd
+
+# Set up directories and permissions
+RUN mkdir -p /home/${USERNAME}/.ssh && \
+    chmod 700 /home/${USERNAME}/.ssh
+
+# Ensure known_hosts file exists before applying chmod
+RUN touch /home/${USERNAME}/.ssh/known_hosts && \
+    chmod 600 /home/${USERNAME}/.ssh/known_hosts
+
+# Expose SSH port
+EXPOSE 22
+
+# Start SSH service and keep container running
+CMD ["sh", "-c", "service ssh start && tail -f /dev/null"]
