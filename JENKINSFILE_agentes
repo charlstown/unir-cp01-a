@@ -22,7 +22,6 @@ pipeline {
             agent any
             steps {
                 // Unstash project files
-                unstash 'project-files'
                 sh '''
                 echo "[AGENT]"
                 whoami
@@ -39,10 +38,13 @@ pipeline {
                 stage('Unit') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/var/jenkins_home/workspace/O24/cp1-1-dev"
+                        PYTHONPATH = "/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2"
                     }
                     steps {
                         // Unstash project files
+                        dir('/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2') {
+                            unstash 'project-files'
+                        }
                         unstash 'project-files'
                         sh '''
                         echo "[AGENT]"
@@ -58,7 +60,7 @@ pipeline {
                 stage('Rest') {
                     agent { label 'agent-jinx' }
                     environment {
-                        PYTHONPATH = "/var/jenkins_home/workspace/O24/cp1-1-dev"
+                        PYTHONPATH = "/home/jinx/jenkins/workspace/case_study_01/cp1-1-reto2"
                     }
                     steps {
                         // Unstash project files
