@@ -9,7 +9,7 @@ pipeline {
                 echo "[AGENT]"
                 whoami
                 hostname
-                git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1
+                git config --global --add safe.directory /var/jenkins_home/workspace/case_study_01/cp1-1-reto2
                 '''
                 git 'https://github.com/charlstown/unir-cp01-a.git'
 
