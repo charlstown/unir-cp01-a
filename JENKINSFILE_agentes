@@ -45,7 +45,6 @@ pipeline {
                         dir('/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2') {
                             unstash 'project-files'
                         }
-                        unstash 'project-files'
                         sh '''
                         echo "[AGENT]"
                         whoami
