@@ -41,14 +41,11 @@ pipeline {
                         PYTHONPATH = "/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2"
                     }
                     steps {
-                        // Unstash project files
-                        dir('/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2') {
-                            unstash 'project-files'
-                        }
                         sh '''
                         echo "[AGENT]"
                         whoami
                         hostname
+                        pwd
                         '''
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
