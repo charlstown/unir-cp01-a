@@ -41,6 +41,8 @@ pipeline {
                         catchError(buildResult: 'UNSTABLE', stageResult: 'Failure'){
                             sh'''
                             export FLASK_APP=app/api.py
+                            echo "Simulating slow flask startup..."
+                            sleep 30 &&
                             flask run &
                             python3 -m pytest --junitxml=result-rest.xml test/rest
                             '''
