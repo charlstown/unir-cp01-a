@@ -22,6 +22,7 @@ pipeline {
             agent any
             steps {
                 // Unstash project files
+                unstash 'project-files'
                 sh '''
                 echo "[AGENT]"
                 whoami
@@ -41,6 +42,7 @@ pipeline {
                         PYTHONPATH = "/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2"
                     }
                     steps {
+                        unstash 'project-files'
                         sh '''
                         echo "[AGENT]"
                         whoami
@@ -50,6 +52,9 @@ pipeline {
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
                         }
+
+                        // Stash the test results
+                        stash includes: 'result-unit.xml', name: 'unit-test-results'
                     }
                 }
 
@@ -73,6 +78,9 @@ pipeline {
                             python3 -m pytest --junitxml=result-rest.xml test/rest
                             '''
                         }
+
+                        // Stash the test results
+                        stash includes: 'result-rest.xml', name: 'rest-test-results'
                     }
                 }
             }
@@ -81,11 +89,18 @@ pipeline {
         stage('Results') {
             agent any
             steps {
+                // Unstash the test results from both tests
+                unstash 'unit-test-results'
+                unstash 'rest-test-results'
+
                 sh '''
                 echo "[AGENT]"
                 whoami
                 hostname
+                ls -la
                 '''
+
+                // Publish the test results
                 junit 'result*.xml'
             }
         }
