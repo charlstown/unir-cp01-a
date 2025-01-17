@@ -29,7 +29,9 @@ pipeline {
                 sh 'python3 -m coverage xml -o coverage.xml'
                 
                 // Publish the coverage report
-                cobertura coberturaReportFile: 'coverage.xml'
+                cobertura coberturaReportFile: 'coverage.xml', 
+                          lineCoverageTargets: '90, 0, 0', 
+                          conditionalCoverageTargets: '80, 0, 0'
             }
         }
         stage('Results') {
