@@ -23,16 +23,13 @@ pipeline {
         stage('Coverage') {
             steps {
                 // Run coverage with the correct source paths
-                sh 'python3 -m coverage run --branch --source=app/__init__.py,app/api.py -m pytest test/unit'
-                
-                // Check if coverage data was collected
-                sh 'python3 -m coverage report'
-                
+                sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest test/unit'
+
                 // Generate the coverage XML report
                 sh 'python3 -m coverage xml -o coverage.xml'
                 
                 // Publish the coverage report
-                step([$class: 'CoberturaPublisher', coberturaReportFile: 'coverage.xml'])
+                cobertura coberturaReportFile: 'coverage.xml'
             }
         }
         stage('Results') {
