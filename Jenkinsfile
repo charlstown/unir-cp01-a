@@ -30,8 +30,8 @@ pipeline {
                 
                 // Publish the coverage report
                 cobertura coberturaReportFile: 'coverage.xml', 
-                          lineCoverageTargets: '90, 0, 0', 
-                          conditionalCoverageTargets: '80, 0, 0'
+                          lineCoverageTargets: '100, 0, 90', 
+                          conditionalCoverageTargets: '100, 0, 85'
             }
         }
         stage('Results') {
