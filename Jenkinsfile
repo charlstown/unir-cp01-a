@@ -20,6 +20,13 @@ pipeline {
                 
             }
         }
+        stage('Coverage') {
+            steps {
+                sh 'python3 -m coverage run --branch --source=app/__init__.py,app/api.py -m pytest test/unit'
+                sh 'python3 -m coverage xml -o coverage.xml'
+                cobertura coberturaReportFile: 'coverage.xml'
+            }
+        }
         stage('Results') {
             steps {
                 // Get results
