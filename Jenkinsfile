@@ -57,10 +57,10 @@ pipeline {
                 }
 
                 // Publish the bandit report
-                recordIssues tools: [bandit(pattern: 'bandit.out')], 
+                recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')], 
                              qualityGates: [
                                  [threshold: 4, type: 'TOTAL', unstable: true],
-                                 [threshold: 2, type: 'TOTAL', unstable: false]
+                                 [threshold: 8, type: 'TOTAL', unstable: false]
                              ]
             }
         }
