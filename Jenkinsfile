@@ -52,13 +52,15 @@ pipeline {
         stage('Security') {
             steps {
                 // Run bandit with custom message template
-                sh 'bandit -r . --msg-template "{abspath}:{line}: [{test_id}] {msg}" -f custom -o bandit.out'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh 'bandit -r . --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}" -f custom -o bandit.out'
+                }
 
                 // Publish the bandit report
                 recordIssues tools: [bandit(pattern: 'bandit.out')], 
                              qualityGates: [
-                                 [threshold: 10, type: 'TOTAL', unstable: true],
-                                 [threshold: 11, type: 'TOTAL', unstable: false]
+                                 [threshold: 4, type: 'TOTAL', unstable: true],
+                                 [threshold: 2, type: 'TOTAL', unstable: false]
                              ]
             }
         }
