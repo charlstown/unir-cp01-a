@@ -52,7 +52,7 @@ pipeline {
         stage('Security') {
             steps {
                 // Run bandit with custom message template
-                catchError(buildResult: 'UNSTABLE', stageResult: 'STABLE') {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'SUCCESS') {
                     sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}"'
                 }
 
