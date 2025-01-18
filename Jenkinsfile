@@ -53,7 +53,7 @@ pipeline {
             steps {
                 // Run bandit with custom message template
                 catchError(buildResult: 'UNSTABLE', stageResult: 'SUCCESS') {
-                    sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}]{msg}"'
+                    sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"'
                 }
 
                 // Publish the bandit report
