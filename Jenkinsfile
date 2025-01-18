@@ -53,6 +53,13 @@ pipeline {
             steps {
                 // Run bandit with custom message template
                 sh 'bandit --exit-zero -r . --msg-template "{abspath}:{line}: [{test_id}] {msg}" -f custom -o bandit.out'
+
+                // Publish the bandit report
+                recordIssues tools: [bandit(pattern: 'bandit.out')], 
+                             qualityGates: [
+                                 [threshold: 4, type: 'TOTAL', unstable: true],
+                                 [threshold: 2, type: 'TOTAL', unstable: false]
+                             ]
             }
         }
         stage('Results') {
