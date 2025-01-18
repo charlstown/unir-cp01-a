@@ -44,7 +44,7 @@ pipeline {
                 // Publish the flake8 report
                 recordIssues tools: [flake8(pattern: 'result-flake8.out')], 
                              qualityGates: [
-                                 [threshold: 10, type: 'TOTAL', unstable: true],
+                                 [threshold: 7, type: 'TOTAL', unstable: true],
                                  [threshold: 11, type: 'TOTAL', unstable: false]
                              ]
             }
