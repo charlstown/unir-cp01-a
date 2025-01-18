@@ -49,6 +49,12 @@ pipeline {
                              ]
             }
         }
+        stage('Security') {
+            steps {
+                // Run bandit with custom message template
+                sh 'bandit --exit-zero -r . --msg-template "{abspath}:{line}: [{test_id}] {msg}" -f custom -o bandit.out'
+            }
+        }
         stage('Results') {
             steps {
                 // Get results
