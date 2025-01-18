@@ -36,6 +36,19 @@ pipeline {
                 }
             }
         }
+        stage('Static') {
+            steps {
+                // Run flake8 with pylint
+                sh 'python3 -m flake8 --format=pylint --output-file=result-flake8.out app'
+
+                // Publish the flake8 report
+                recordIssues tools: [flake8(pattern: 'result-flake8.out')], 
+                             qualityGates: [
+                                 [threshold: 10, type: 'TOTAL', unstable: true],
+                                 [threshold: 11, type: 'TOTAL', unstable: false]
+                             ]
+            }
+        }
         stage('Results') {
             steps {
                 // Get results
