@@ -52,7 +52,7 @@ pipeline {
         stage('Security') {
             steps {
                 // Run bandit with custom message template
-                sh 'bandit --exit-zero -r . --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}" -f custom -o bandit.out'
+                sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}"'
 
                 // Publish the bandit report
                 recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')], 
