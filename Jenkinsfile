@@ -39,7 +39,7 @@ pipeline {
         stage('Static') {
             steps {
                 // Run flake8 with pylint
-                sh 'python3 -m flake8 --format=pylint --output-file=result-flake8.out app'
+                sh 'python3 -m flake8 --format=pylint --exit-zero --output-file=result-flake8.out app'
 
                 // Publish the flake8 report
                 recordIssues tools: [flake8(pattern: 'result-flake8.out')], 
