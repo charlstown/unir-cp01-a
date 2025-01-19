@@ -15,25 +15,29 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
                     // Run Pytest unit tests
-                    sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+                    sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest --junitxml=result-unit.xml test/unit'
                 }
-                
+                // Publish Unit test results
+                junit 'result-unit.xml'
             }
         }
-        stage('Coverage') {
+        stage('Rest') {
+            environment {
+                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
+            }
             steps {
-                // Run coverage with the correct source paths
-                sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest test/unit'
-
-                // Generate the coverage XML report
-                sh 'python3 -m coverage xml -o coverage.xml'
-                
-                // Publish the coverage report
+                // Run flask app
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    cobertura coberturaReportFile: 'coverage.xml', 
-                              lineCoverageTargets: '100, 0, 90', 
-                              conditionalCoverageTargets: '100, 0, 80'
+                    sh '''
+                    export FLASK_APP=app/api.py
+                    echo "Simulating slow flask startup..."
+                    sleep 30 &&
+                    flask run &
+                    python3 -m pytest --junitxml=result-rest.xml test/rest
+                    '''
                 }
+                // Publish REST test results
+                junit 'result-rest.xml'
             }
         }
         stage('Static') {
@@ -44,30 +48,37 @@ pipeline {
                 // Publish the flake8 report
                 recordIssues tools: [flake8(pattern: 'result-flake8.out')], 
                              qualityGates: [
-                                 [threshold: 12, type: 'TOTAL', unstable: true],
-                                 [threshold: 15, type: 'TOTAL', unstable: false]
+                                 [threshold: 8, type: 'TOTAL', unstable: true],
+                                 [threshold: 10, type: 'TOTAL', unhealthy: true]
                              ]
             }
         }
-        stage('Security') {
+        stage('Security Test') {
             steps {
-                // Run bandit with custom message template
-                catchError(buildResult: 'UNSTABLE', stageResult: 'SUCCESS') {
-                    sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    // Run bandit with custom message template
+                    sh 'bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}"'
                 }
 
                 // Publish the bandit report
                 recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')], 
                              qualityGates: [
-                                 [threshold: 4, type: 'TOTAL', unstable: true],
-                                 [threshold: 8, type: 'TOTAL', unstable: false]
+                                 [threshold: 2, type: 'TOTAL', unstable: true],
+                                 [threshold: 4, type: 'TOTAL', unhealthy: true]
                              ]
             }
         }
-        stage('Results') {
+        stage('Coverage') {
             steps {
-                // Get results
-                junit 'result*.xml'
+                // Generate the coverage XML report
+                sh 'python3 -m coverage xml -o coverage.xml'
+                
+                // Publish the coverage report
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    cobertura coberturaReportFile: 'coverage.xml', 
+                              lineCoverageTargets: '95,85,85', 
+                              conditionalCoverageTargets: '90, 80, 80'
+                }
             }
         }
     }
