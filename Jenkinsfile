@@ -79,18 +79,20 @@ pipeline {
                                  [threshold: 10, type: 'TOTAL', unhealthy: true]
                              ]
             }
+        }
         stage('Security Test') {
             steps {
                 // Run bandit and ignore its exit code
                 sh '''
+                echo "Running Bandit..."
                 bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}:{severity}:{test_id}:{msg}" || true
                 '''
 
                 // Publish the Bandit report and evaluate the quality gate
                 recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')], 
                             qualityGates: [
-                                [threshold: 2, type: 'TOTAL', unstable: true],
-                                [threshold: 4, type: 'TOTAL', unhealthy: true]
+                                [threshold: 2, type: 'TOTAL', unstable: true],  // Unstable if >= 2 issues
+                                [threshold: 4, type: 'TOTAL', unhealthy: true] // Fail if >= 4 issues
                             ]
             }
         }
