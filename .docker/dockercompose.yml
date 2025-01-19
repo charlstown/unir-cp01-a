@@ -1,5 +1,5 @@
 networks:
-  shared_network:
+  jenkins_network:
     driver: bridge
 
 services:
@@ -8,23 +8,59 @@ services:
     container_name: jenkins
     user: root
     volumes:
-      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/jenkins_vol:/var/jenkins_home
+      - ${VOLUMES_PATH}/jenkins_vol:/var/jenkins_home
     ports:
       - "8080:8080"
       - "50000:50000"
     networks:
-      - shared_network
+      - jenkins_network
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
     
   wiremock:
     image: wiremock/wiremock:latest
     container_name: wiremock
     ports:
-      - "9090:9090"  # Map your desired port
-    command: --port=9090  # Specify the new internal port for WireMock
+      - "9090:9090"  # Map external port 9090 to container's internal port 9090
+    command: --port 9090  # Correct syntax for WireMock
     networks:
-      - shared_network
+      - jenkins_network
     volumes:
-      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/extensions:/var/wiremock/extensions
-      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/__files:/home/wiremock/__files
-      - /mnt/42086A060869F975/00_MyUniverse/00_WIP/2411_UnirDevOps/DevOpsAndCloud/docker_volumes/wiremock_vol/mappings:/home/wiremock/mappings
+      - ${VOLUMES_PATH}/wiremock_vol/extensions:/var/wiremock/extensions
+      - ${VOLUMES_PATH}/wiremock_vol/__files:/home/wiremock/__files
+      - ${VOLUMES_PATH}/wiremock_vol/mappings:/home/wiremock/mappings
+
+  agent-jinx:
+    image: jenkins-agent-jinx:latest
+
+    privileged: true
+    container_name: agent-jinx
+    restart: always
+    user: jinx
+    hostname: agent-jinx
+
+    networks:
+      - jenkins_network
+
+    volumes:
+      - ${VOLUMES_PATH}/jinx-ssh/.ssh:/home/jinx/.ssh
+      - ${VOLUMES_PATH}/jinx_vol:/home/jinx/jenkins
+
+
+  agent-vi:
+    image: jenkins-agent-vi:latest
+    privileged: true
+    container_name: agent-vi
+    restart: always
+    user: vi
+    hostname: agent-vi
+    networks:
+      - jenkins_network
+
+    volumes:
+      - ${VOLUMES_PATH}/vi-ssh/.ssh:/home/vi/.ssh
+      - ${VOLUMES_PATH}/vi_vol:/home/vi/jenkins

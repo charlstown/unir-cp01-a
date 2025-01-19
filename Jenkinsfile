@@ -28,12 +28,39 @@ pipeline {
             steps {
                 // Continue the pipeline even if REST tests fail
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    // Start Flask server in the background
                     sh '''
                     export FLASK_APP=app/api.py
-                    echo "Simulating slow flask startup..."
-                    sleep 30 &&
-                    flask run &
+                    echo "Starting Flask server..."
+                    flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
+                    echo $! > flask.pid
+                    '''
+
+                    // Readiness check for Flask server
+                    sh '''
+                    echo "Waiting for Flask to be ready..."
+                    for i in {1..10}; do
+                        if curl -s http://127.0.0.1:5000 > /dev/null; then
+                            echo "Flask is up and running!"
+                            break
+                        fi
+                        echo "Flask not ready yet, retrying in 3 seconds..."
+                        sleep 3
+                    done
+                    '''
+
+                    // Run REST tests
+                    sh '''
                     python3 -m pytest --junitxml=result-rest.xml test/rest
+                    '''
+
+                    // Stop Flask server after tests
+                    sh '''
+                    if [ -f flask.pid ]; then
+                        echo "Stopping Flask server..."
+                        kill $(cat flask.pid)
+                        rm flask.pid
+                    fi
                     '''
                 }
                 // Publish REST test results, even if some tests failed
