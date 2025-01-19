@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Rest') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
+                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto_1"
             }
             steps {
                 // Continue the pipeline even if REST tests fail
