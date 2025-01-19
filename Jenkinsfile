@@ -13,8 +13,8 @@ pipeline {
                 PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto_1"
             }
             steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
-                    // Run Pytest unit tests
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    // Run Pytest unit tests with coverage
                     sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest --junitxml=result-unit.xml test/unit'
                 }
                 // Publish Unit test results
@@ -26,7 +26,7 @@ pipeline {
                 PYTHONPATH="/var/jenkins_home/workspace/O24/cp1-1-dev"
             }
             steps {
-                // Run flask app
+                // Continue the pipeline even if REST tests fail
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh '''
                     export FLASK_APP=app/api.py
@@ -36,7 +36,7 @@ pipeline {
                     python3 -m pytest --junitxml=result-rest.xml test/rest
                     '''
                 }
-                // Publish REST test results
+                // Publish REST test results, even if some tests failed
                 junit 'result-rest.xml'
             }
         }
