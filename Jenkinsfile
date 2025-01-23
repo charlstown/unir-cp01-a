@@ -80,7 +80,7 @@ pipeline {
                              ]
             }
         }
-        stage('Security Test') {
+        stage('Security') {
             steps {
                 // Run bandit and ignore its exit code
                 sh '''
@@ -107,6 +107,15 @@ pipeline {
                               lineCoverageTargets: '95,85,85', 
                               conditionalCoverageTargets: '90, 80, 80'
                 }
+            }
+        }
+        stage('Performance') {
+            steps {
+                // Generate the coverage XML report
+                sh 'jmeter -n -t flask.jmx -f -l flask.jtl'
+                
+                // Publish the performance report
+                perfReport sourceDataFiles: 'flask.jtl'
             }
         }
     }
