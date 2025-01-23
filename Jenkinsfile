@@ -112,8 +112,8 @@ pipeline {
         stage('Performance') {
             steps {
                 // Generate the coverage XML report
-                sh 'jmeter -n -t flask.jmx -f -l flask.jtl'
-                
+                sh 'jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
+
                 // Publish the performance report
                 perfReport sourceDataFiles: 'flask.jtl'
             }
