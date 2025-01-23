@@ -53,15 +53,6 @@ pipeline {
                     sh '''
                     python3 -m pytest --junitxml=result-rest.xml test/rest
                     '''
-
-                    // Stop Flask server after tests
-                    sh '''
-                    if [ -f flask.pid ]; then
-                        echo "Stopping Flask server..."
-                        kill $(cat flask.pid)
-                        rm flask.pid
-                    fi
-                    '''
                 }
                 // Publish REST test results, even if some tests failed
                 junit 'result-rest.xml'
@@ -116,6 +107,15 @@ pipeline {
 
                 // Publish the performance report
                 perfReport sourceDataFiles: 'flask.jtl'
+
+                // Stop Flask server after tests
+                sh '''
+                if [ -f flask.pid ]; then
+                    echo "Stopping Flask server..."
+                    kill $(cat flask.pid)
+                    rm flask.pid
+                fi
+                '''
             }
         }
     }
