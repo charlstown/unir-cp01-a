@@ -160,9 +160,10 @@ pipeline {
                 sh '''
                 ls test/jmeter
                 ls /opt/
+                ls /opt/apache-jmeter-5.6.3
                 '''
                 // Ejecutar pruebas de rendimiento
-                sh '/opt/jmeter/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
+                sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
                 // Stash de los resultados de rendimiento
                 stash includes: 'flask.jtl', name: 'performance-results'
