@@ -50,6 +50,10 @@ pipeline {
                         always {
                             cleanWs() // Limpieza del workspace
                         }
+                        success {
+                            unstash 'unit-test-results'
+                            junit 'result-unit.xml'
+                        }
                     }
                 }
 
@@ -98,6 +102,10 @@ pipeline {
                         always {
                             cleanWs() // Limpieza del workspace
                         }
+                        success {
+                            unstash 'rest-test-results'
+                            junit 'result-rest.xml'
+                        }
                     }
                 }
 
@@ -118,6 +126,14 @@ pipeline {
                     post {
                         always {
                             cleanWs() // Limpieza del workspace
+                        }
+                        success {
+                            unstash 'flake8-results'
+                            recordIssues tools: [flake8(pattern: 'result-flake8.out')],
+                                         qualityGates: [
+                                             [threshold: 8, type: 'TOTAL', unstable: true],
+                                             [threshold: 10, type: 'TOTAL', unhealthy: true]
+                                         ]
                         }
                     }
                 }
@@ -143,6 +159,14 @@ pipeline {
                         always {
                             cleanWs() // Limpieza del workspace
                         }
+                        success {
+                            unstash 'bandit-results'
+                            recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
+                                         qualityGates: [
+                                             [threshold: 2, type: 'TOTAL', unstable: true],
+                                             [threshold: 4, type: 'TOTAL', unhealthy: true]
+                                         ]
+                        }
                     }
                 }
             }
@@ -157,10 +181,7 @@ pipeline {
                 whoami
                 hostname
                 '''
-                sh '''
-                echo $JMETER_VERSION
-                echo $PATH
-                '''
+                
                 // Ejecutar pruebas de rendimiento
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
@@ -180,39 +201,10 @@ pipeline {
                 always {
                     cleanWs() // Limpieza del workspace
                 }
-            }
-        }
-
-        stage('Publish Results') {
-            agent any
-            steps {
-                // Unstash and publish unit test results
-                unstash 'unit-test-results'
-                junit 'result-unit.xml'
-
-                // Unstash and publish REST test results
-                unstash 'rest-test-results'
-                junit 'result-rest.xml'
-
-                // Unstash and publish flake8 results
-                unstash 'flake8-results'
-                recordIssues tools: [flake8(pattern: 'result-flake8.out')],
-                             qualityGates: [
-                                 [threshold: 8, type: 'TOTAL', unstable: true],
-                                 [threshold: 10, type: 'TOTAL', unhealthy: true]
-                             ]
-
-                // Unstash and publish bandit results
-                unstash 'bandit-results'
-                recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
-                             qualityGates: [
-                                 [threshold: 2, type: 'TOTAL', unstable: true],
-                                 [threshold: 4, type: 'TOTAL', unhealthy: true]
-                             ]
-
-                // Unstash and publish performance results
-                unstash 'performance-results'
-                perfReport sourceDataFiles: 'flask.jtl'
+                success {
+                    unstash 'performance-results'
+                    perfReport sourceDataFiles: 'flask.jtl'
+                }
             }
         }
     }
