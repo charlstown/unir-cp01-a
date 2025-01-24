@@ -45,7 +45,6 @@ pipeline {
                         }
                         // Stash de los resultados de pruebas unitarias
                         stash includes: 'result-unit.xml', name: 'unit-test-results'
-                        junit 'result-unit.xml' // Publicar resultados de pruebas unitarias
                     }
                     post {
                         always {
@@ -92,6 +91,8 @@ pipeline {
                             python3 -m pytest --junitxml=result-rest.xml test/rest
                             '''
                         }
+                        // Stash de los resultados de pruebas REST
+                        stash includes: 'result-rest.xml', name: 'rest-test-results'
                     }
                     post {
                         always {
@@ -111,12 +112,8 @@ pipeline {
                         // Ejecutar flake8
                         sh 'python3 -m flake8 --format=pylint --exit-zero --output-file=result-flake8.out app'
 
-                        // Publicar el reporte de flake8
-                        recordIssues tools: [flake8(pattern: 'result-flake8.out')],
-                                     qualityGates: [
-                                         [threshold: 8, type: 'TOTAL', unstable: true],
-                                         [threshold: 10, type: 'TOTAL', unhealthy: true]
-                                     ]
+                        // Stash de los resultados de flake8
+                        stash includes: 'result-flake8.out', name: 'flake8-results'
                     }
                     post {
                         always {
@@ -139,12 +136,8 @@ pipeline {
                         bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}" || true
                         '''
 
-                        // Publicar el reporte de seguridad
-                        recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
-                                     qualityGates: [
-                                         [threshold: 2, type: 'TOTAL', unstable: true],
-                                         [threshold: 4, type: 'TOTAL', unhealthy: true]
-                                     ]
+                        // Stash de los resultados de bandit
+                        stash includes: 'bandit.out', name: 'bandit-results'
                     }
                     post {
                         always {
@@ -167,8 +160,8 @@ pipeline {
                 // Ejecutar pruebas de rendimiento
                 sh 'jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
-                // Publicar reporte de rendimiento
-                perfReport sourceDataFiles: 'flask.jtl'
+                // Stash de los resultados de rendimiento
+                stash includes: 'flask.jtl', name: 'performance-results'
 
                 // Stop Flask server after tests
                 sh '''
@@ -183,6 +176,39 @@ pipeline {
                 always {
                     cleanWs() // Limpieza del workspace
                 }
+            }
+        }
+
+        stage('Publish Results') {
+            agent any
+            steps {
+                // Unstash and publish unit test results
+                unstash 'unit-test-results'
+                junit 'result-unit.xml'
+
+                // Unstash and publish REST test results
+                unstash 'rest-test-results'
+                junit 'result-rest.xml'
+
+                // Unstash and publish flake8 results
+                unstash 'flake8-results'
+                recordIssues tools: [flake8(pattern: 'result-flake8.out')],
+                             qualityGates: [
+                                 [threshold: 8, type: 'TOTAL', unstable: true],
+                                 [threshold: 10, type: 'TOTAL', unhealthy: true]
+                             ]
+
+                // Unstash and publish bandit results
+                unstash 'bandit-results'
+                recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
+                             qualityGates: [
+                                 [threshold: 2, type: 'TOTAL', unstable: true],
+                                 [threshold: 4, type: 'TOTAL', unhealthy: true]
+                             ]
+
+                // Unstash and publish performance results
+                unstash 'performance-results'
+                perfReport sourceDataFiles: 'flask.jtl'
             }
         }
     }
