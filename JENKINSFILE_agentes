@@ -157,6 +157,7 @@ pipeline {
                 whoami
                 hostname
                 '''
+                sh 'ls -a'
                 // Ejecutar pruebas de rendimiento
                 sh 'jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
