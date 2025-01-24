@@ -27,7 +27,7 @@ pipeline {
 
         stage('Testing and Analysis') {
             parallel {
-                stage('Unit Tests') {
+                stage('Unit') {
                     agent { label 'agent-vi' }
                     environment {
                         PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
@@ -54,7 +54,7 @@ pipeline {
                     }
                 }
 
-                stage('REST Tests') {
+                stage('REST') {
                     agent { label 'agent-vi' }
                     environment {
                         PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
@@ -86,6 +86,11 @@ pipeline {
                                 sleep 1
                             done
                             '''
+
+                            // Run REST tests
+                            sh '''
+                            python3 -m pytest --junitxml=result-rest.xml test/rest
+                            '''
                         }
                     }
                     post {
@@ -95,12 +100,11 @@ pipeline {
                     }
                 }
 
-                stage('Static Analysis') {
+                stage('Static') {
                     agent { label 'agent-jinx' }
                     steps {
                         unstash 'project-files' // Recuperar los archivos del proyecto
                         sh '''
-                        echo "[STATIC ANALYSIS AGENT]"
                         whoami
                         hostname
                         '''
@@ -121,7 +125,7 @@ pipeline {
                     }
                 }
 
-                stage('Security Analysis') {
+                stage('Security') {
                     agent { label 'agent-jinx' }
                     steps {
                         unstash 'project-files' // Recuperar los archivos del proyecto

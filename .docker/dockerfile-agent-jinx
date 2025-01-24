@@ -6,6 +6,11 @@ USER root
 # ENV variables
 ARG USERNAME=jinx
 ARG PASSWORD=powder
+# Set the JMeter version
+ENV JMETER_VERSION=5.6.3
+ENV JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
+# Add JMeter to the PATH
+ENV PATH=${JMETER_HOME}/bin:$PATH
 
 # Install required packages
 RUN apt-get update && \
@@ -18,7 +23,14 @@ RUN apt-get update && \
     python3-pip \
     python3-pytest \
     python3-flask \
-    git
+    python3-flake8 \
+    python3-bandit \
+    git \
+    wget \
+    wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz -P /opt && \
+    tar -xzf /opt/apache-jmeter-${JMETER_VERSION}.tgz -C /opt && \
+    rm /opt/apache-jmeter-${JMETER_VERSION}.tgz && \
+    apt-get clean
 
 # Create the user, set the password, and add to sudo group
 RUN useradd -ms /bin/bash ${USERNAME} \
