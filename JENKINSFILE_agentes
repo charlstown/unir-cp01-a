@@ -170,10 +170,7 @@ pipeline {
                 // Publicar reporte de rendimiento
                 perfReport sourceDataFiles: 'flask.jtl'
             }
-            post {
-                always {
-                    cleanWs() // Limpieza del workspace
-                }
+
             }
         }
     }

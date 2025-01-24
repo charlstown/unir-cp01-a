@@ -26,7 +26,7 @@ RUN apt-get update && \
     python3-flake8 \
     python3-bandit \
     git \
-    wget \
+    wget && \
     wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz -P /opt && \
     tar -xzf /opt/apache-jmeter-${JMETER_VERSION}.tgz -C /opt && \
     rm /opt/apache-jmeter-${JMETER_VERSION}.tgz && \
