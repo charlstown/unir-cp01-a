@@ -158,9 +158,8 @@ pipeline {
                 hostname
                 '''
                 sh '''
-                ls test/jmeter
-                ls /opt/
-                ls /opt/apache-jmeter-5.6.3
+                echo $JMETER_VERSION
+                echo $PATH
                 '''
                 // Ejecutar pruebas de rendimiento
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
