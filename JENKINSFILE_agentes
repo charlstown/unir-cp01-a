@@ -156,7 +156,7 @@ pipeline {
         }
 
         stage('Performance') {
-            agent { label 'agent-jinx' }
+            agent { label 'agent-vi' }
             steps {
                 unstash 'project-files' // Recuperar los archivos del proyecto
                 sh '''
@@ -169,6 +169,20 @@ pipeline {
 
                 // Publicar reporte de rendimiento
                 perfReport sourceDataFiles: 'flask.jtl'
+
+                // Stop Flask server after tests
+                sh '''
+                if [ -f flask.pid ]; then
+                    echo "Stopping Flask server..."
+                    kill $(cat flask.pid)
+                    rm flask.pid
+                fi
+                '''
+            }
+            post {
+                always {
+                    cleanWs() // Limpieza del workspace
+                }
             }
         }
     }
