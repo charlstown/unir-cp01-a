@@ -157,12 +157,8 @@ pipeline {
                 whoami
                 hostname
                 '''
-                sh '''
-                ls test/jmeter
-                which jmeter
-                '''
                 // Ejecutar pruebas de rendimiento
-                sh 'jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
+                sh '/opt/jmeter/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
                 // Stash de los resultados de rendimiento
                 stash includes: 'flask.jtl', name: 'performance-results'
