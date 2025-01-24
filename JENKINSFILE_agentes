@@ -2,7 +2,7 @@ pipeline {
     agent none
     stages {
         stage('Get Code') {
-            agent { label 'agent-vi' }
+            agent { label 'any' }
             steps {
                 sh '''
                 whoami
