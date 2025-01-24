@@ -75,7 +75,6 @@ pipeline {
             steps {
                 // Run bandit and ignore its exit code
                 sh '''
-                echo "Running Bandit..."
                 bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}" || true
                 '''
 

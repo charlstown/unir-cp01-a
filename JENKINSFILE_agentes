@@ -1,107 +1,172 @@
 pipeline {
-    agent any
-
+    agent none
     stages {
-        stage('Setup') {
-            agent any
+        stage('Get Code') {
+            agent { label 'agent-vi' }
             steps {
                 sh '''
-                echo "[AGENT]"
                 whoami
                 hostname
-                git config --global --add safe.directory /var/jenkins_home/workspace/case_study_01/cp1-1-reto2
                 '''
+                // Configurar git y clonar el repositorio
+                sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
                 git 'https://github.com/charlstown/unir-cp01-a.git'
 
-                // Stash files after cloning
+                // Stash de los archivos del proyecto para las siguientes etapas
                 stash includes: '**', name: 'project-files'
             }
-        }
-
-        stage('Build') {
-            agent any
-            steps {
-                // Unstash project files
-                unstash 'project-files'
-                sh '''
-                echo "[AGENT]"
-                whoami
-                hostname
-                echo '[Build] No build needed'
-                ls -la
-                echo $WORKSPACE
-                '''
+            post {
+                always {
+                    cleanWs() // Limpieza del workspace
+                }
             }
         }
 
-        stage('Tests') {
+        stage('Testing and Analysis') {
             parallel {
-                stage('Unit') {
+                stage('Unit Tests') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/home/vi/jenkins/workspace/case_study_01/cp1-1-reto2"
+                        PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
                     }
                     steps {
-                        unstash 'project-files'
+                        unstash 'project-files' // Recuperar los archivos del proyecto
                         sh '''
-                        echo "[AGENT]"
+                        echo "[UNIT TESTS AGENT]"
                         whoami
                         hostname
-                        pwd
                         '''
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            sh 'python3 -m pytest --junitxml=result-unit.xml test/unit'
+                            // Ejecutar las pruebas unitarias con cobertura
+                            sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest --junitxml=result-unit.xml test/unit'
                         }
-
-                        // Stash the test results
+                        // Stash de los resultados de pruebas unitarias
                         stash includes: 'result-unit.xml', name: 'unit-test-results'
+                        junit 'result-unit.xml' // Publicar resultados de pruebas unitarias
+                    }
+                    post {
+                        always {
+                            cleanWs() // Limpieza del workspace
+                        }
                     }
                 }
 
-                stage('Rest') {
-                    agent { label 'agent-jinx' }
+                stage('REST Tests') {
+                    agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/home/jinx/jenkins/workspace/case_study_01/cp1-1-reto2"
+                        PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
                     }
                     steps {
-                        // Unstash project files
-                        unstash 'project-files'
+                        unstash 'project-files' // Recuperar los archivos del proyecto
                         sh '''
-                        echo "[AGENT]"
+                        echo "[REST TESTS AGENT]"
                         whoami
                         hostname
                         '''
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
-                            flask run &
-                            python3 -m pytest --junitxml=result-rest.xml test/rest
+                            echo "Starting Flask server..."
+                            flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
+                            echo $! > flask.pid
+                            '''
+
+                            // Esperar a que el servidor Flask esté listo
+                            sh '''
+                            echo "Waiting for Flask to be ready..."
+                            for i in {1..10}; do
+                                if curl -s http://127.0.0.1:5000 > /dev/null; then
+                                    echo "Flask is up and running!"
+                                    break
+                                fi
+                                sleep 1
+                            done
                             '''
                         }
+                    }
+                    post {
+                        always {
+                            cleanWs() // Limpieza del workspace
+                        }
+                    }
+                }
 
-                        // Stash the test results
-                        stash includes: 'result-rest.xml', name: 'rest-test-results'
+                stage('Static Analysis') {
+                    agent { label 'agent-jinx' }
+                    steps {
+                        unstash 'project-files' // Recuperar los archivos del proyecto
+                        sh '''
+                        echo "[STATIC ANALYSIS AGENT]"
+                        whoami
+                        hostname
+                        '''
+                        // Ejecutar flake8
+                        sh 'python3 -m flake8 --format=pylint --exit-zero --output-file=result-flake8.out app'
+
+                        // Publicar el reporte de flake8
+                        recordIssues tools: [flake8(pattern: 'result-flake8.out')],
+                                     qualityGates: [
+                                         [threshold: 8, type: 'TOTAL', unstable: true],
+                                         [threshold: 10, type: 'TOTAL', unhealthy: true]
+                                     ]
+                    }
+                    post {
+                        always {
+                            cleanWs() // Limpieza del workspace
+                        }
+                    }
+                }
+
+                stage('Security Analysis') {
+                    agent { label 'agent-jinx' }
+                    steps {
+                        unstash 'project-files' // Recuperar los archivos del proyecto
+                        sh '''
+                        echo "[SECURITY ANALYSIS AGENT]"
+                        whoami
+                        hostname
+                        '''
+                        // Ejecutar bandit
+                        sh '''
+                        bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}" || true
+                        '''
+
+                        // Publicar el reporte de seguridad
+                        recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
+                                     qualityGates: [
+                                         [threshold: 2, type: 'TOTAL', unstable: true],
+                                         [threshold: 4, type: 'TOTAL', unhealthy: true]
+                                     ]
+                    }
+                    post {
+                        always {
+                            cleanWs() // Limpieza del workspace
+                        }
                     }
                 }
             }
         }
 
-        stage('Results') {
-            agent any
+        stage('Performance') {
+            agent { label 'agent-jinx' }
             steps {
-                // Unstash the test results from both tests
-                unstash 'unit-test-results'
-                unstash 'rest-test-results'
-
+                unstash 'project-files' // Recuperar los archivos del proyecto
                 sh '''
-                echo "[AGENT]"
+                echo "[PERFORMANCE TESTS AGENT]"
                 whoami
                 hostname
-                ls -la
                 '''
+                // Ejecutar pruebas de rendimiento
+                sh 'jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
-                // Publish the test results
-                junit 'result*.xml'
+                // Publicar reporte de rendimiento
+                perfReport sourceDataFiles: 'flask.jtl'
+            }
+            post {
+                always {
+                    cleanWs() // Limpieza del workspace
+                }
             }
         }
     }
