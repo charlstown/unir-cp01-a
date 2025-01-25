@@ -29,6 +29,36 @@ pipeline {
             }
         }
 
+        stage('Run Flask') {
+            agent { label 'agent-vi' }
+            environment {
+                PYTHONPATH = "/home/vi/jenkins/workspace/cp_1.2/reto2"
+            }
+            steps {
+                script {
+                    // Iniciar el servidor Flask en segundo plano
+                    sh '''
+                    echo "Starting Flask server..."
+                    export FLASK_APP=app/api.py
+                    nohup flask run --host=127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 &
+                    echo $! > /tmp/flask.pid
+                    '''
+
+                    // Esperar a que el servidor Flask esté listo
+                    sh '''
+                    echo "Waiting for Flask to be ready..."
+                    for i in {1..10}; do
+                        if curl -s http://127.0.0.1:5000 > /dev/null; then
+                            echo "Flask is running!"
+                            break
+                        fi
+                        sleep 1
+                    done
+                    '''
+                }
+            }
+        }
+
         stage('Testing and Analysis') {
             parallel {
                 stage('Unit') {
@@ -84,26 +114,6 @@ pipeline {
 
                         // Ejecutar las pruebas REST
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            // Iniciar el servidor Flask
-                            sh '''
-                            export FLASK_APP=app/api.py
-                            nohup flask run --host=127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 &
-                            echo $! > /tmp/flask.pid
-                            '''
-
-                            // Esperar a que el servidor Flask esté listo
-                            sh '''
-                            echo "Waiting for flask..."
-                            for i in {1..10}; do
-                                if curl -s http://127.0.0.1:5000 > /dev/null; then
-                                    echo "Flask is running!"
-                                    break
-                                fi
-                                sleep 1
-                            done
-                            '''
-
-                            // Ejecutar las pruebas REST
                             sh '''
                             python3 -m pytest --junitxml=result-rest.xml test/rest
                             '''
