@@ -115,12 +115,6 @@ pipeline {
                         // Guardar los resultados de las pruebas REST
                         stash includes: 'result-rest.xml', name: 'rest-test-results'
                     }
-                    post {
-                        always {
-                            // Limpiar el espacio de trabajo después de esta etapa
-                            cleanWs()
-                        }
-                    }
                 }
 
                 stage('Static') {
