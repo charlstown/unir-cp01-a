@@ -10,7 +10,7 @@ pipeline {
         }
         stage('Unit') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto_1"
+                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Rest') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto_1"
+                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
             }
             steps {
                 // Continue the pipeline even if REST tests fail
