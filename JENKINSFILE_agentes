@@ -42,7 +42,7 @@ pipeline {
                     echo "PYTHONPATH: ${PYTHONPATH}"
                     export PYTHONPATH=$WORKSPACE
                     export FLASK_APP=app/api.py
-                    flask run > /tmp/flask.log 2>&1 &
+                    flask run &
                     echo $! > /tmp/flask.pid
                     '''
 
