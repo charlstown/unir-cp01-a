@@ -40,6 +40,7 @@ pipeline {
                     sh '''
                     echo "Starting Flask server..."
                     echo "PYTHONPATH: ${PYTHONPATH}"
+                    export PYTHONPATH=$WORKSPACE
                     export FLASK_APP=app/api.py
                     nohup flask run --host=127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 &
                     echo $! > /tmp/flask.pid
@@ -48,13 +49,20 @@ pipeline {
                     // Esperar a que el servidor Flask esté listo
                     sh '''
                     echo "Waiting for Flask to be ready..."
+                    SERVER_READY=0
                     for i in {1..10}; do
                         if curl -s http://127.0.0.1:5000 > /dev/null; then
                             echo "Flask is running!"
+                            SERVER_READY=1
                             break
                         fi
+                        echo "Flask is not ready, retrying in 1 second..."
                         sleep 1
                     done
+                    if [ $SERVER_READY -eq 0 ]; then
+                        echo "Flask server did not start in time. Check /tmp/flask.log for details."
+                        exit 1
+                    fi
                     '''
                 }
             }
