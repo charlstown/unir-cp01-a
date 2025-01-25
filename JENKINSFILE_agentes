@@ -187,14 +187,6 @@ pipeline {
                 hostname
                 '''
 
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                    sh '''
-                    ls
-                    curl -s http://agent-flask:5000
-                    curl http://agent-flask:5000/calc/add/1/2
-                    '''
-                }
-
                 // Ejecutar pruebas de rendimiento con JMeter
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
