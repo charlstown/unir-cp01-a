@@ -68,7 +68,6 @@ pipeline {
 
                 stage('REST') {
                     agent { label 'agent-vi' }
-                    customWorkspace '/home/vi/jenkins/workspace/cp_1.2/reto_2'
                     environment {
                         PYTHONPATH = "/home/vi/jenkins/workspace/cp_2/reto2"
                     }
@@ -88,7 +87,7 @@ pipeline {
                             // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
-                            flask run > /tmp/flask.log 2>&1 &
+                            flask run &
                             echo $! > /tmp/flask.pid
                             '''
 
@@ -103,9 +102,6 @@ pipeline {
                                 sleep 1
                             done
                             '''
-
-                            // Guardar los archivos de registro del servidor Flask
-                            stash includes: 'flask.pid, flask.log', name: 'flask-info'
 
                             // Ejecutar las pruebas REST
                             sh '''
@@ -226,9 +222,9 @@ pipeline {
 
                 // Detener el servidor Flask
                 sh '''
-                if [ -f flask.pid ]; then
-                    kill $(cat flask.pid)
-                    rm flask.pid
+                if [ -f /tmp/flask.pid ]; then
+                    kill $(cat /tmp/flask.pid)
+                    rm /tmp/flask.pid
                 fi
                 '''
             }
