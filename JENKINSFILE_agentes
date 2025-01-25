@@ -201,8 +201,6 @@ pipeline {
                 hostname
                 '''
 
-                unstash 'flask-info'
-
                 sh '''
                 ls
                 cat flask.pid
