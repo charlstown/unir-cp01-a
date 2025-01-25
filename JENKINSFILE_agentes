@@ -67,8 +67,10 @@ pipeline {
                 }
 
                 stage('REST') {
-                    agent { label 'agent-vi' }
-                    customWorkspace '/home/vi/jenkins/workspace/cp_1.2/reto_2'
+                    agent { 
+                        label 'agent-vi' 
+                        customWorkspace '/home/vi/jenkins/workspace/cp_1.2/reto_2'
+                    }
                     environment {
                         PYTHONPATH = "/home/vi/jenkins/workspace/cp_2/reto2"
                     }
@@ -193,8 +195,10 @@ pipeline {
         }
 
         stage('Performance') {
-            agent { label 'agent-vi' }
-            customWorkspace '/home/vi/jenkins/workspace/cp_1.2/reto_2'
+            agent { 
+                label 'agent-vi' 
+                customWorkspace '/home/vi/jenkins/workspace/cp_1.2/reto_2'
+            }
             steps {
                 // Recuperar los archivos del proyecto
                 unstash 'project-files'
