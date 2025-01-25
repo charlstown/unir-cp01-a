@@ -103,6 +103,9 @@ pipeline {
                             done
                             '''
 
+                            // Guardar los archivos de registro del servidor Flask
+                            stash includes: 'flask.pid, flask.log', name: 'flask-info'
+
                             // Ejecutar las pruebas REST
                             sh '''
                             python3 -m pytest --junitxml=result-rest.xml test/rest
@@ -200,6 +203,8 @@ pipeline {
                 whoami
                 hostname
                 '''
+
+                unstash 'flask-info'
 
                 sh '''
                 ls
