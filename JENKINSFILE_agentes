@@ -69,7 +69,7 @@ pipeline {
                 stage('REST') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/home/vi/jenkins/workspace/cp_2/reto2"
+                        PYTHONPATH = "/home/vi/jenkins/workspace/cp_1.2/reto2"
                     }
                     steps {
                         // Recuperar los archivos del proyecto
@@ -87,7 +87,7 @@ pipeline {
                             // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
-                            nohup flask run
+                            flask run &
                             echo $! > /tmp/flask.pid
                             '''
 
