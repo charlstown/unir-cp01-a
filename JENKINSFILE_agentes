@@ -1,26 +1,30 @@
 pipeline {
     agent none
     options {
-        skipDefaultCheckout(true) // Avoid default SCM checkout
+        // Evitar la verificación (checkout) predeterminada del SCM
+        skipDefaultCheckout(true)
     }
     stages {
         stage('Get Code') {
             agent any
             steps {
+                // Imprimir información del usuario y el host actual
                 sh '''
                 whoami
                 hostname
                 '''
-                // Configure git and clone the repository
+
+                // Configurar Git y clonar el repositorio
                 sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
                 git 'https://github.com/charlstown/unir-cp01-a.git'
 
-                // Stash project files for later stages
+                // Guardar los archivos del proyecto para las siguientes etapas
                 stash includes: '**', name: 'project-files'
             }
             post {
                 always {
-                    cleanWs() // Clean workspace after this stage
+                    // Limpiar el espacio de trabajo después de esta etapa
+                    cleanWs()
                 }
             }
         }
@@ -33,22 +37,31 @@ pipeline {
                         PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
                     }
                     steps {
-                        unstash 'project-files' // Retrieve project files
+                        // Recuperar los archivos del proyecto
+                        unstash 'project-files'
+
+                        // Imprimir información del usuario y el host actual
                         sh '''
                         echo "[UNIT TESTS AGENT]"
                         whoami
                         hostname
                         '''
+
+                        // Ejecutar las pruebas unitarias con cobertura
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            // Run unit tests with coverage
                             sh 'python3 -m coverage run --branch --source=app --omit=app/__init__.py,app/api.py -m pytest --junitxml=result-unit.xml test/unit'
                         }
-                        junit 'result-unit.xml' // Publish results immediately for pipeline color
+
+                        // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
+                        junit 'result-unit.xml'
+
+                        // Guardar los resultados de las pruebas unitarias
                         stash includes: 'result-unit.xml', name: 'unit-test-results'
                     }
                     post {
                         always {
-                            cleanWs() // Clean workspace
+                            // Limpiar el espacio de trabajo después de esta etapa
+                            cleanWs()
                         }
                     }
                 }
@@ -59,41 +72,50 @@ pipeline {
                         PYTHONPATH = "/var/jenkins_home/workspace/cp_1.2/reto_1"
                     }
                     steps {
-                        unstash 'project-files' // Retrieve project files
+                        // Recuperar los archivos del proyecto
+                        unstash 'project-files'
+
+                        // Imprimir información del usuario y el host actual
                         sh '''
                         echo "[REST TESTS AGENT]"
                         whoami
                         hostname
                         '''
+
+                        // Ejecutar las pruebas REST
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                            // Start Flask server
+                            // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
                             flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
                             echo $! > flask.pid
                             '''
 
-                            // Wait for Flask to be ready
+                            // Esperar a que el servidor Flask esté listo
                             sh '''
-                            echo "Waiting for Flask to be ready..."
+                            echo "Esperando a que Flask esté listo..."
                             for i in {1..10}; do
                                 if curl -s http://127.0.0.1:5000 > /dev/null; then
-                                    echo "Flask is up and running!"
+                                    echo "¡Flask está en funcionamiento!"
                                     break
                                 fi
                                 sleep 1
                             done
                             '''
 
-                            // Run REST tests
+                            // Ejecutar las pruebas REST
                             sh '''
                             python3 -m pytest --junitxml=result-rest.xml test/rest
                             '''
                         }
-                        junit 'result-rest.xml' // Publish results immediately for pipeline color
+
+                        // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
+                        junit 'result-rest.xml'
+
+                        // Guardar los resultados de las pruebas REST
                         stash includes: 'result-rest.xml', name: 'rest-test-results'
 
-                        // Stop Flask server
+                        // Detener el servidor Flask
                         sh '''
                         if [ -f flask.pid ]; then
                             kill $(cat flask.pid)
@@ -103,7 +125,8 @@ pipeline {
                     }
                     post {
                         always {
-                            cleanWs() // Clean workspace
+                            // Limpiar el espacio de trabajo después de esta etapa
+                            cleanWs()
                         }
                     }
                 }
@@ -111,25 +134,32 @@ pipeline {
                 stage('Static') {
                     agent { label 'agent-jinx' }
                     steps {
-                        unstash 'project-files' // Retrieve project files
+                        // Recuperar los archivos del proyecto
+                        unstash 'project-files'
+
+                        // Imprimir información del usuario y el host actual
                         sh '''
                         whoami
                         hostname
                         '''
-                        // Run flake8
+
+                        // Ejecutar flake8 para el análisis estático
                         sh 'python3 -m flake8 --format=pylint --exit-zero --output-file=result-flake8.out app'
 
-                        // Publish results immediately for pipeline color
+                        // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
                         recordIssues tools: [flake8(pattern: 'result-flake8.out')],
                                      qualityGates: [
                                          [threshold: 8, type: 'TOTAL', unstable: true],
                                          [threshold: 10, type: 'TOTAL', unhealthy: true]
                                      ]
+
+                        // Guardar los resultados del análisis estático
                         stash includes: 'result-flake8.out', name: 'flake8-results'
                     }
                     post {
                         always {
-                            cleanWs() // Clean workspace
+                            // Limpiar el espacio de trabajo después de esta etapa
+                            cleanWs()
                         }
                     }
                 }
@@ -137,28 +167,35 @@ pipeline {
                 stage('Security') {
                     agent { label 'agent-jinx' }
                     steps {
-                        unstash 'project-files' // Retrieve project files
+                        // Recuperar los archivos del proyecto
+                        unstash 'project-files'
+
+                        // Imprimir información del usuario y el host actual
                         sh '''
                         echo "[SECURITY ANALYSIS AGENT]"
                         whoami
                         hostname
                         '''
-                        // Run bandit
+
+                        // Ejecutar Bandit para el análisis de seguridad
                         sh '''
                         bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}" || true
                         '''
 
-                        // Publish results immediately for pipeline color
+                        // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
                         recordIssues tools: [pyLint(name: 'bandit', pattern: 'bandit.out')],
                                      qualityGates: [
                                          [threshold: 2, type: 'TOTAL', unstable: true],
                                          [threshold: 4, type: 'TOTAL', unhealthy: true]
                                      ]
+
+                        // Guardar los resultados del análisis de seguridad
                         stash includes: 'bandit.out', name: 'bandit-results'
                     }
                     post {
                         always {
-                            cleanWs() // Clean workspace
+                            // Limpiar el espacio de trabajo después de esta etapa
+                            cleanWs()
                         }
                     }
                 }
@@ -168,22 +205,31 @@ pipeline {
         stage('Performance') {
             agent { label 'agent-vi' }
             steps {
-                unstash 'project-files' // Retrieve project files
+                // Recuperar los archivos del proyecto
+                unstash 'project-files'
+
+                // Imprimir información del usuario y el host actual
                 sh '''
                 echo "[PERFORMANCE TESTS AGENT]"
                 whoami
                 hostname
                 '''
 
-                // Run performance tests
+                sh'curl http://127.0.0.1:5000/calc/add/1/2'
+
+                // Ejecutar pruebas de rendimiento con JMeter
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
+                // Guardar los resultados de las pruebas de rendimiento
                 stash includes: 'flask.jtl', name: 'performance-results'
-                perfReport sourceDataFiles: 'flask.jtl' // Publish results immediately for pipeline color
+
+                // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
+                perfReport sourceDataFiles: 'flask.jtl'
             }
             post {
                 always {
-                    cleanWs() // Clean workspace
+                    // Limpiar el espacio de trabajo después de esta etapa
+                    cleanWs()
                 }
             }
         }
