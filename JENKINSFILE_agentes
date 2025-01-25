@@ -42,7 +42,7 @@ pipeline {
                     echo "PYTHONPATH: ${PYTHONPATH}"
                     export PYTHONPATH=$WORKSPACE
                     export FLASK_APP=app/api.py
-                    nohup flask run --host=127.0.0.1 --port=5000 > /tmp/flask.log 2>&1 &
+                    flask run > /tmp/flask.log 2>&1 &
                     echo $! > /tmp/flask.pid
                     '''
 
