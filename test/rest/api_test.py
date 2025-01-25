@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 import pytest
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://0.0.0.0:5000"
 BASE_URL_MOCK = "http://wiremock:9090"
 DEFAULT_TIMEOUT = 2  # in secs
 
