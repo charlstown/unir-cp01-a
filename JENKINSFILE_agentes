@@ -44,7 +44,7 @@ pipeline {
             echo "Starting Flask server..."
             export PYTHONPATH=$WORKSPACE
             export FLASK_APP=app/api.py
-            nohup flask run --host=0.0.0.0 --port=5000 > /tmp/flask.log 2>&1 &
+            nohup flask run --host=0.0.0.0 --port=5000 &
             echo $! > /tmp/flask.pid
             '''
 
