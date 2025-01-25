@@ -202,6 +202,8 @@ pipeline {
                 '''
 
                 sh '''
+                ls
+                cat flask.pid
                 echo $FLASK_APP
                 curl -s http://localhost:5000
                 curl http://localhost:5000/calc/add/1/2
