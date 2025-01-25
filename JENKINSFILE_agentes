@@ -203,14 +203,6 @@ pipeline {
 
                 // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
                 perfReport sourceDataFiles: 'flask.jtl'
-
-                // Detener el servidor Flask
-                sh '''
-                if [ -f /tmp/flask.pid ]; then
-                    kill $(cat /tmp/flask.pid)
-                    rm /tmp/flask.pid
-                fi
-                '''
             }
             post {
                 always {
