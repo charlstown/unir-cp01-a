@@ -36,13 +36,16 @@ pipeline {
             }
             steps {
                 script {
+                    // Recuperar los archivos del proyecto
+                    unstash 'project-files'
+
                     // Iniciar el servidor Flask en segundo plano
                     sh '''
                     echo "Starting Flask server..."
                     echo "PYTHONPATH: ${PYTHONPATH}"
                     export PYTHONPATH=$WORKSPACE
                     export FLASK_APP=app/api.py
-                    flask --app app/api.py run &
+                    flask run &
                     echo $! > /tmp/flask.pid
                     '''
 
