@@ -29,40 +29,6 @@ pipeline {
             }
         }
 
-        stage('Run Flask') {
-            agent { label 'agent-flask' }
-            environment {
-                PYTHONPATH = "${WORKSPACE}"
-            }
-            steps {
-                script {
-            // Unstash project files to ensure Flask has access to them
-            unstash 'project-files'
-
-            // Start Flask server and make it persistent
-            sh '''
-            echo "Starting Flask server..."
-            export PYTHONPATH=$WORKSPACE
-            export FLASK_APP=app/api.py
-            nohup flask run --host=0.0.0.0 --port=5000 &
-            echo $! > /tmp/flask.pid
-            '''
-
-            // Wait for Flask to be ready
-            sh '''
-            echo "Waiting for Flask to be ready..."
-            for i in {1..10}; do
-                if curl -s http://0.0.0.0:5000 > /dev/null; then
-                    echo "Flask is running!"
-                    break
-                fi
-                sleep 1
-            done
-            '''
-                }
-            }
-        }
-
         stage('Testing and Analysis') {
             parallel {
                 stage('Unit') {
@@ -128,6 +94,12 @@ pipeline {
 
                         // Guardar los resultados de las pruebas REST
                         stash includes: 'result-rest.xml', name: 'rest-test-results'
+                    }
+                    post {
+                        always {
+                            // Limpiar el espacio de trabajo después de esta etapa
+                            cleanWs()
+                        }
                     }
                 }
 
@@ -218,8 +190,8 @@ pipeline {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh '''
                     ls
-                    curl -s http://localhost:5000
-                    curl http://localhost:5000/calc/add/1/2
+                    curl -s http://agent-flask:5000
+                    curl http://agent-flask:5000/calc/add/1/2
                     '''
                 }
 
