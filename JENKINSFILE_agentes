@@ -87,7 +87,7 @@ pipeline {
                             // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
-                            nohup flask run &
+                            nohup flask run
                             echo $! > /tmp/flask.pid
                             '''
 
