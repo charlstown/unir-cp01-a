@@ -93,10 +93,10 @@ pipeline {
 
                             // Esperar a que el servidor Flask esté listo
                             sh '''
-                            echo "Esperando a que Flask esté listo..."
+                            echo "Waiting for flask..."
                             for i in {1..10}; do
                                 if curl -s http://127.0.0.1:5000 > /dev/null; then
-                                    echo "¡Flask está en funcionamiento!"
+                                    echo "Flask is running!"
                                     break
                                 fi
                                 sleep 1
@@ -114,14 +114,6 @@ pipeline {
 
                         // Guardar los resultados de las pruebas REST
                         stash includes: 'result-rest.xml', name: 'rest-test-results'
-
-                        // Detener el servidor Flask
-                        sh '''
-                        if [ -f flask.pid ]; then
-                            kill $(cat flask.pid)
-                            rm flask.pid
-                        fi
-                        '''
                     }
                     post {
                         always {
@@ -215,8 +207,6 @@ pipeline {
                 hostname
                 '''
 
-                sh'curl http://127.0.0.1:5000/calc/add/1/2'
-
                 // Ejecutar pruebas de rendimiento con JMeter
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
@@ -225,6 +215,14 @@ pipeline {
 
                 // Publicar los resultados inmediatamente para reflejar el estado en el pipeline
                 perfReport sourceDataFiles: 'flask.jtl'
+
+                // Detener el servidor Flask
+                        sh '''
+                        if [ -f flask.pid ]; then
+                            kill $(cat flask.pid)
+                            rm flask.pid
+                        fi
+                        '''
             }
             post {
                 always {
