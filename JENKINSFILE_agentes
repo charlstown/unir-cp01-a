@@ -32,7 +32,7 @@ pipeline {
         stage('Run Flask') {
             agent { label 'agent-vi' }
             environment {
-                PYTHONPATH = "/home/vi/jenkins/workspace/cp_1.2/reto2"
+                PYTHONPATH = "${WORKSPACE}"
             }
             steps {
                 script {
@@ -64,7 +64,7 @@ pipeline {
                 stage('Unit') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/home/vi/jenkins/workspace/case_study_01/cp_2/reto2"
+                        PYTHONPATH = "${WORKSPACE}"
                     }
                     steps {
                         // Recuperar los archivos del proyecto
