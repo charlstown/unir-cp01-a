@@ -1,0 +1,33 @@
+# Base image
+FROM ubuntu:latest
+
+# Use root user
+USER root
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+    openssh-server \
+    sudo \
+    curl \
+    openjdk-17-jdk \
+    openjdk-17-jre \
+    python3 \
+    python3-pip \
+    python3-flask && \
+    apt-get clean
+
+# Create SSH directory and configure SSH server
+RUN mkdir -p /var/run/sshd && \
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
+# Set up a specific SSH password via build argument
+ARG ROOT_PASSWORD=flask
+RUN echo "root:${ROOT_PASSWORD}" | chpasswd
+
+# Expose SSH port
+EXPOSE 22
+
+# Start SSH service and keep container running
+CMD ["sh", "-c", "sudo service ssh start && tail -f /dev/null"]
