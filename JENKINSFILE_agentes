@@ -88,8 +88,8 @@ pipeline {
                             // Iniciar el servidor Flask
                             sh '''
                             export FLASK_APP=app/api.py
-                            flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
-                            echo $! > flask.pid
+                            flask run > /tmp/flask.log 2>&1 &
+                            echo $! > /tmp/flask.pid
                             '''
 
                             // Esperar a que el servidor Flask esté listo
