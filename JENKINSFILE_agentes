@@ -207,6 +207,11 @@ pipeline {
                 hostname
                 '''
 
+                sh '''
+                curl -s http://127.0.0.1:5000
+                curl http://localhost:5000/calc/add/1/2
+                '''
+
                 // Ejecutar pruebas de rendimiento con JMeter
                 sh '/opt/apache-jmeter-5.6.3/bin/jmeter -n -t test/jmeter/flask.jmx -f -l flask.jtl'
 
