@@ -12,6 +12,7 @@ pipeline {
                 sh '''
                 whoami
                 hostname
+                echo "Workspace: ${WORKSPACE}"
                 '''
 
                 // Configurar Git y clonar el repositorio
@@ -45,6 +46,7 @@ pipeline {
                         echo "[UNIT TESTS AGENT]"
                         whoami
                         hostname
+                        echo "Workspace: ${WORKSPACE}"
                         '''
 
                         // Ejecutar las pruebas unitarias con cobertura
@@ -69,7 +71,7 @@ pipeline {
                 stage('REST') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = "/home/vi/jenkins/workspace/cp_1.2/reto2"
+                        PYTHONPATH = ${WORKSPACE}
                     }
                     steps {
                         // Recuperar los archivos del proyecto
@@ -77,9 +79,9 @@ pipeline {
 
                         // Imprimir información del usuario y el host actual
                         sh '''
-                        echo "[REST TESTS AGENT]"
                         whoami
                         hostname
+                        echo "Workspace: ${WORKSPACE}"
                         '''
 
                         // Ejecutar las pruebas REST
@@ -113,6 +115,7 @@ pipeline {
                         sh '''
                         whoami
                         hostname
+                        echo "Workspace: ${WORKSPACE}"
                         '''
 
                         // Ejecutar flake8 para el análisis estático
@@ -147,6 +150,7 @@ pipeline {
                         echo "[SECURITY ANALYSIS AGENT]"
                         whoami
                         hostname
+                        echo "Workspace: ${WORKSPACE}"
                         '''
 
                         // Ejecutar Bandit para el análisis de seguridad
@@ -185,6 +189,7 @@ pipeline {
                 echo "[PERFORMANCE TESTS AGENT]"
                 whoami
                 hostname
+                echo "Workspace: ${WORKSPACE}"
                 '''
 
                 // Ejecutar pruebas de rendimiento con JMeter
