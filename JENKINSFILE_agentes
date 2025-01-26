@@ -71,7 +71,7 @@ pipeline {
                 stage('REST') {
                     agent { label 'agent-vi' }
                     environment {
-                        PYTHONPATH = ${WORKSPACE}
+                        PYTHONPATH = "${WORKSPACE}"
                         FLASK_HOST = 'agent-flask'
                     }
                     steps {
