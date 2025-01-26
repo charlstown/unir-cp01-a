@@ -3,19 +3,22 @@ pipeline {
     stages {
         stage('Get Code') {
             steps {
-                // Add the safe.directory and clone the repository
-                sh 'git config --global --add safe.directory ${WORKSPACE}'
-                
-                // Check out the branch set by Jenkins (typically provided as env.BRANCH_NAME)
-                sh '''
-                echo "Fetching branch: ${GIT_BRANCH}"
-                git clone -b ${GIT_BRANCH} --single-branch https://github.com/charlstown/unir-cp01-a.git .
-                '''
+                script {
+                    // Add the workspace as a safe directory for Git
+                    sh 'git config --global --add safe.directory ${WORKSPACE}'
+
+                    // Clone the repository and check out the specified branch
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: "refs/heads/${GIT_BRANCH}"]], // Specify the branch dynamically
+                        userRemoteConfigs: [[url: 'https://github.com/charlstown/unir-cp01-a.git']]
+                    ])
+                }
             }
         }
+
         stage('Unit') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
+                PYTHONPATH="${WORKSPACE}"
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -28,7 +31,7 @@ pipeline {
         }
         stage('Rest') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
+                PYTHONPATH="${WORKSPACE}"
             }
             steps {
                 // Continue the pipeline even if REST tests fail
