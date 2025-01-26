@@ -2,17 +2,14 @@ pipeline {
     agent any
     stages {
         stage('Get Code') {
-            node {
-                    echo 'Pulling...' + env.BRANCH_NAME
-                }
             steps {
                 // Add the safe.directory and clone the repository
                 sh 'git config --global --add safe.directory ${WORKSPACE}'
                 
                 // Check out the branch set by Jenkins (typically provided as env.BRANCH_NAME)
                 sh '''
-                echo "Fetching branch: " + env.BRANCH_NAME
-                git clone -b ${BRANCH_NAME} --single-branch https://github.com/charlstown/unir-cp01-a.git .
+                echo "Fetching branch: ${GIT_BRANCH}"
+                git clone -b ${GIT_BRANCH} --single-branch https://github.com/charlstown/unir-cp01-a.git .
                 '''
             }
         }
