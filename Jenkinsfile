@@ -2,6 +2,9 @@ pipeline {
     agent any
     stages {
         stage('Get Code') {
+            node {
+                    echo 'Pulling...' + env.BRANCH_NAME
+                }
             steps {
                 // Add the safe.directory and clone the repository
                 sh 'git config --global --add safe.directory ${WORKSPACE}'
