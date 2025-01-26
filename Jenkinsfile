@@ -15,7 +15,6 @@ pipeline {
                 }
             }
         }
-
         stage('Unit') {
             environment {
                 PYTHONPATH="${WORKSPACE}"
@@ -125,6 +124,12 @@ pipeline {
                 fi
                 '''
             }
+        }
+    }
+    post {
+        always {
+            // Clean the workspace after the pipeline completes
+            cleanWs()
         }
     }
 }
