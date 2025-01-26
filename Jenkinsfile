@@ -4,13 +4,13 @@ pipeline {
         stage('Get Code') {
             steps {
                 // Add the safe.directory and clone the repository
-                sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
+                sh 'git config --global --add safe.directory ${WORKSPACE}'
                 git 'https://github.com/charlstown/unir-cp01-a.git'
             }
         }
         stage('Unit') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
+                PYTHONPATH="${WORKSPACE}"
             }
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Rest') {
             environment {
-                PYTHONPATH="/var/jenkins_home/workspace/cp_1.2/reto1"
+                PYTHONPATH="${WORKSPACE}"
             }
             steps {
                 // Continue the pipeline even if REST tests fail
@@ -116,6 +116,12 @@ pipeline {
                 fi
                 '''
             }
+        }
+    }
+    post {
+        always {
+            // Clean the workspace after the pipeline completes
+            cleanWs()
         }
     }
 }
