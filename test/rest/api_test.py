@@ -5,7 +5,8 @@ from urllib.request import urlopen
 
 import pytest
 
-BASE_URL = "http://agent-flask:5000"
+FLASK_HOST = os.getenv('FLASK_HOST', '127.0.0.1')
+BASE_URL = f"http://{FLASK_HOST}:5000"
 BASE_URL_MOCK = "http://wiremock:9090"
 DEFAULT_TIMEOUT = 2  # in secs
 

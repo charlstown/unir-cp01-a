@@ -72,6 +72,7 @@ pipeline {
                     agent { label 'agent-vi' }
                     environment {
                         PYTHONPATH = ${WORKSPACE}
+                        FLASK_HOST = 'agent-flask'
                     }
                     steps {
                         // Recuperar los archivos del proyecto
