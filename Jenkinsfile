@@ -9,7 +9,7 @@ pipeline {
 
                     // Clone the repository and check out the specified branch
                     checkout([$class: 'GitSCM',
-                        branches: [[name: "refs/heads/${GIT_BRANCH}"]], // Specify the branch dynamically
+                        branches: [[name: "${GIT_BRANCH}"]],
                         userRemoteConfigs: [[url: 'https://github.com/charlstown/unir-cp01-a.git']]
                     ])
                 }
