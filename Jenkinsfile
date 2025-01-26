@@ -4,11 +4,11 @@ pipeline {
         stage('Get Code') {
             steps {
                 // Add the safe.directory and clone the repository
-                sh 'git config --global --add safe.directory /var/jenkins_home/workspace/O24/test-1'
+                sh 'git config --global --add safe.directory ${WORKSPACE}'
                 
                 // Check out the branch set by Jenkins (typically provided as env.BRANCH_NAME)
                 sh '''
-                echo "Fetching branch: ${BRANCH_NAME}"
+                echo "Fetching branch: " + env.BRANCH_NAME
                 git clone -b ${BRANCH_NAME} --single-branch https://github.com/charlstown/unir-cp01-a.git .
                 '''
             }
